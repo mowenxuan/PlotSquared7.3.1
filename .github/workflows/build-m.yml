@@ -1,0 +1,35 @@
+name: build
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:  # 开启网页手动运行按钮
+
+jobs:
+  build:
+    # 删掉原有的 if: github.repository_owner == 'IntellectualSites'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v7
+
+      - name: Validate Gradle Wrapper
+        uses: gradle/actions/wrapper-validation@v6
+
+      - name: Setup Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 21
+
+      - name: Clean Build
+        run: ./gradlew clean build -x test
+
+      # 上传构建好的jar产物，Gradle多模块，把全部build/libs下面jar上传
+      - name: Upload built jars
+        uses: actions/upload-artifact@v4
+        with:
+          name: compiled-jars
+          path: |
+            **/build/libs/*.jar
+          retention-days: 30
